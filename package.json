@@ -1,0 +1,13 @@
+{
+  "name": "petcare-platform-root",
+  "private": true,
+  "workspaces": [
+    "petcare-platform/admin-web"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=petcare-platform/admin-web",
+    "build": "npm run build --workspace=petcare-platform/admin-web",
+    "preview": "npm run preview --workspace=petcare-platform/admin-web",
+    "lint": "npm run lint --workspace=petcare-platform/admin-web"
+  }
+}

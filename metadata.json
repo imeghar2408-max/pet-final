@@ -1,0 +1,8 @@
+{
+  "name": "PetCare",
+  "description": "PetCare — Trusted pet care marketplace with real-time GPS tracking and safe-zone monitoring.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
+

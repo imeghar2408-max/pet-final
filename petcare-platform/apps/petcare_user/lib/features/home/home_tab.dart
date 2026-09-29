@@ -438,7 +438,7 @@ class _HomeTabState extends State<HomeTab> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => PetDetailScreen(pet: pet, onUpdated: _loadData),
+                           builder: (_) => PetDetailScreen(pet: pet),
                           ),
                         );
                       },

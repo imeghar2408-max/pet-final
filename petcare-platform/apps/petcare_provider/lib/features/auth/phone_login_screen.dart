@@ -49,7 +49,6 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               builder: (_) => OtpVerifyScreen(
                 verificationId: verificationId,
                 phone: phone,
-                isNewAccount: _isNewAccount,
               ),
             ),
           );

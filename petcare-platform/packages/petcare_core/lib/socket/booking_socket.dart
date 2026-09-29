@@ -13,7 +13,7 @@ class BookingSocket {
       io.OptionBuilder().setTransports(['websocket']).disableAutoConnect().build(),
     );
     socket.connect();
-    socket.onConnect((_) => socket.emit('joinBooking', bookingId));
+    socket.on('connect', (_) => socket.emit('joinBooking', bookingId));
   }
 
   void dispose() {

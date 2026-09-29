@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:petcare_core/petcare_core.dart';
 
@@ -11,12 +12,46 @@ class UserApiService {
 
   ApiClient get client => _client;
 
+  List<dynamic> _extractList(dynamic rawData) {
+    if (rawData == null) return [];
+    if (rawData is String) {
+      try {
+        rawData = jsonDecode(rawData);
+      } catch (_) {
+        return [];
+      }
+    }
+    if (rawData is List) return rawData;
+    if (rawData is Map) {
+      if (rawData['data'] is List) return rawData['data'] as List;
+      if (rawData['providers'] is List) return rawData['providers'] as List;
+      if (rawData['pets'] is List) return rawData['pets'] as List;
+      if (rawData['bookings'] is List) return rawData['bookings'] as List;
+      if (rawData['complaints'] is List) return rawData['complaints'] as List;
+    }
+    return [];
+  }
+
+  Map<String, dynamic> _extractMap(dynamic rawData) {
+    if (rawData == null) return {};
+    if (rawData is String) {
+      try {
+        rawData = jsonDecode(rawData);
+      } catch (_) {
+        return {};
+      }
+    }
+    if (rawData is Map<String, dynamic>) return rawData;
+    if (rawData is Map) return Map<String, dynamic>.from(rawData);
+    return {};
+  }
+
   /// Check current user profile from backend
   Future<Map<String, dynamic>?> getMe() async {
     try {
       final res = await _client.post('/auth/me');
       if (res.data == null) return null;
-      return res.data as Map<String, dynamic>;
+      return _extractMap(res.data);
     } catch (_) {
       return null;
     }
@@ -35,14 +70,14 @@ class UserApiService {
         if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
       },
     );
-    return res.data as Map<String, dynamic>;
+    return _extractMap(res.data);
   }
 
   /// Fetch all pets for the authenticated owner
   Future<List<Pet>> getPets() async {
     final res = await _client.get('/users/pets');
-    final list = res.data as List;
-    return list.map((e) => Pet.fromJson(e as Map<String, dynamic>)).toList();
+    final list = _extractList(res.data);
+    return list.map((e) => Pet.fromJson(_extractMap(e))).toList();
   }
 
   /// Add a pet to owner's profile
@@ -67,7 +102,7 @@ class UserApiService {
         if (photoUrl != null && photoUrl.trim().isNotEmpty) 'photoUrl': photoUrl.trim(),
       },
     );
-    return Pet.fromJson(res.data as Map<String, dynamic>);
+    return Pet.fromJson(_extractMap(res.data));
   }
 
   /// Discover verified providers offering a specific service near owner's actual location
@@ -84,8 +119,8 @@ class UserApiService {
       query['serviceType'] = backendEnumName(serviceType.name);
     }
     final res = await _client.get('/providers/nearby', query: query);
-    final list = res.data as List;
-    return list.map((e) => ProviderSummary.fromJson(e as Map<String, dynamic>)).toList();
+    final list = _extractList(res.data);
+    return list.map((e) => ProviderSummary.fromJson(_extractMap(e))).toList();
   }
 
   /// Submit a real booking request
@@ -112,14 +147,14 @@ class UserApiService {
         if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
       },
     );
-    return Booking.fromJson(res.data as Map<String, dynamic>);
+    return Booking.fromJson(_extractMap(res.data));
   }
 
   /// Fetch bookings for current owner
   Future<List<Booking>> getMyBookings() async {
     final res = await _client.get('/bookings/mine');
-    final list = res.data as List;
-    return list.map((e) => Booking.fromJson(e as Map<String, dynamic>)).toList();
+    final list = _extractList(res.data);
+    return list.map((e) => Booking.fromJson(_extractMap(e))).toList();
   }
 
   /// Update the live safe zone for an active booking
@@ -160,7 +195,7 @@ class UserApiService {
   /// Create Razorpay payment order
   Future<Map<String, dynamic>> createPaymentOrder(String bookingId) async {
     final res = await _client.post('/payments/create-order', data: {'bookingId': bookingId});
-    return res.data as Map<String, dynamic>;
+    return _extractMap(res.data);
   }
 
   /// Verify Razorpay payment
@@ -179,7 +214,7 @@ class UserApiService {
         'razorpay_signature': razorpaySignature,
       },
     );
-    return res.data as Map<String, dynamic>;
+    return _extractMap(res.data);
   }
 
   /// Submit support complaint
@@ -198,13 +233,13 @@ class UserApiService {
         if (bookingId != null && bookingId.isNotEmpty) 'bookingId': bookingId,
       },
     );
-    return Complaint.fromJson(res.data as Map<String, dynamic>);
+    return Complaint.fromJson(_extractMap(res.data));
   }
 
   /// List user's support complaints
   Future<List<Complaint>> getMyComplaints() async {
     final res = await _client.get('/complaints/mine');
-    final list = res.data as List;
-    return list.map((e) => Complaint.fromJson(e as Map<String, dynamic>)).toList();
+    final list = _extractList(res.data);
+    return list.map((e) => Complaint.fromJson(_extractMap(e))).toList();
   }
 }

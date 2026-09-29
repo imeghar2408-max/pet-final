@@ -202,7 +202,7 @@ class _RateProviderScreenState extends State<RateProviderScreen> {
               const SizedBox(height: 20),
 
               // Feedback textarea
-              const Text(
+              Text(
                 'Leave feedback for ${widget.providerName} (Optional)',
                 style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: PetColors.dark),
               ),

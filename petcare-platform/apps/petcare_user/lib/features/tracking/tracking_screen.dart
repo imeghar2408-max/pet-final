@@ -9,7 +9,6 @@ import '../../widgets/petcare_button.dart';
 import '../../widgets/status_badge.dart';
 import '../booking/booking_detail_screen.dart';
 import '../chat/chat_screen.dart';
-import '../reviews/review_flow_screen.dart';
 import '../support/report_issue_screen.dart';
 
 class TrackingScreen extends StatefulWidget {
@@ -71,11 +70,11 @@ class _TrackingScreenState extends State<TrackingScreen> with SingleTickerProvid
       bookingId: widget.booking.id,
     );
 
-    _socket.socket.onConnect((_) {
+    _socket.socket.on('connect', (_) {
       if (mounted) setState(() => _isConnected = true);
     });
 
-    _socket.socket.onDisconnect((_) {
+    _socket.socket.on('disconnect', (_) {
       if (mounted) setState(() => _isConnected = false);
     });
 
@@ -343,7 +342,13 @@ class _TrackingScreenState extends State<TrackingScreen> with SingleTickerProvid
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => BookingDetailScreen(booking: b),
+                  builder: (_) => BookingDetailScreen(
+                    booking: b,
+                    // No-op: this screen doesn't own booking state to refresh.
+                    // Wire this to a real reload if BookingDetailScreen starts
+                    // allowing actions that change the booking (cancel, etc.).
+                    onRefresh: () {},
+                  ),
                 ),
               );
             },

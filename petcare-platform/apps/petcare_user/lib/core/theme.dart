@@ -66,7 +66,7 @@ class PetTheme {
         ),
         iconTheme: IconThemeData(color: PetColors.dark),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: PetColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(

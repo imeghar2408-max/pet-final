@@ -4,7 +4,7 @@ import '../../core/api_service.dart';
 import '../../core/app_messenger.dart';
 import '../../core/theme.dart';
 import '../../widgets/petcare_card.dart';
-import '../auth/welcome_screen.dart';
+import '../auth/phone_login_screen.dart';
 import '../booking/my_bookings_screen.dart';
 import '../pets/my_pets_screen.dart';
 import '../support/support_screen.dart';
@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       showAppSnackBar('Signed out successfully');
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+        MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
         (route) => false,
       );
     }

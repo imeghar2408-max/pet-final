@@ -5,8 +5,9 @@ import '../../widgets/petcare_card.dart';
 
 class PetDetailScreen extends StatelessWidget {
   final Pet pet;
+  final VoidCallback? onUpdated;
 
-  const PetDetailScreen({super.key, required this.pet});
+  const PetDetailScreen({super.key, required this.pet, this.onUpdated});
 
   String _getEmoji(String species) {
     switch (species.toLowerCase()) {

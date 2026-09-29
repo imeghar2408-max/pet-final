@@ -290,6 +290,13 @@ class ProviderSummary {
   final String? bio;
   final int? yearsExperience;
   final bool isAvailable;
+  final double? currentLat;
+  final double? currentLng;
+  // Not returned by the backend today — always null unless you compute it
+  // client-side (e.g. haversine against the pet owner's current position)
+  // and set it after fetching. UI call sites already fall back gracefully
+  // when this is null.
+  final double? distanceKm;
 
   ProviderSummary({
     required this.id,
@@ -301,6 +308,9 @@ class ProviderSummary {
     this.bio,
     this.yearsExperience,
     this.isAvailable = true,
+    this.currentLat,
+    this.currentLng,
+    this.distanceKm,
   });
 
   factory ProviderSummary.fromJson(Map<String, dynamic> json) => ProviderSummary(
@@ -315,6 +325,8 @@ class ProviderSummary {
         bio: json['bio'],
         yearsExperience: json['yearsExperience'],
         isAvailable: json['isAvailable'] ?? true,
+        currentLat: (json['currentLat'] as num?)?.toDouble(),
+        currentLng: (json['currentLng'] as num?)?.toDouble(),
       );
 
   /// Price for a specific service this provider offers, if any.

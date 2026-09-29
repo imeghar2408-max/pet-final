@@ -128,7 +128,7 @@ class WelcomeScreen extends StatelessWidget {
               // Secondary CTA
               PetCareButton(
                 label: 'Already have an account? Sign in',
-                type: PetButtonType.ghost,
+                type: PetButtonType.text,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),

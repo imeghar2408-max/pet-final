@@ -96,7 +96,7 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
         if (entry.value) {
           final price = int.tryParse(_priceControllers[entry.key]?.text.trim() ?? '') ?? 350;
           servicesList.add({
-            'serviceType': entry.key.name.toUpperCase(),
+            'serviceType': backendEnumName(entry.key.name),
             'priceInr': price,
             'durationMin': 60,
           });

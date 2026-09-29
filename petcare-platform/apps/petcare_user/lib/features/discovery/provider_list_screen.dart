@@ -94,9 +94,8 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
     }
 
     for (final p in _providers) {
-      final lat = p.currentLat ?? (_ownerPosition != null ? _ownerPosition!.latitude + 0.005 : 0.0);
-      final lng = p.currentLng ?? (_ownerPosition != null ? _ownerPosition!.longitude + 0.005 : 0.0);
-
+    final lat = _ownerPosition != null ? _ownerPosition!.latitude + 0.005 : 0.0;
+final lng = _ownerPosition != null ? _ownerPosition!.longitude + 0.005 : 0.0;
       markers.add(
         Marker(
           markerId: MarkerId(p.id),
@@ -266,7 +265,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${p.ratingAvg} ★ (${p.ratingCount}) • ${p.distanceKm ?? 1.2} km',
+                                  '${p.ratingAvg} ★ (${p.ratingCount})',
                                   style: const TextStyle(fontSize: 12, color: PetColors.darkMuted),
                                 ),
                                 const SizedBox(height: 4),
@@ -382,13 +381,14 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                                   style: const TextStyle(fontSize: 12, color: PetColors.darkMuted),
                                 ),
                               ],
-                              if (provider.distanceKm != null) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  '•  ${provider.distanceKm} km away',
-                                  style: const TextStyle(fontSize: 12, color: PetColors.darkMuted),
-                                ),
-                              ],
+/*
+if (provider.distanceKm != null) ...[
+  Text(
+    '•  ${provider.distanceKm} km away',
+    style: const TextStyle(fontSize: 12, color: PetColors.darkMuted),
+  ),
+],
+*/
                               if (provider.yearsExperience != null && provider.yearsExperience! > 0) ...[
                                 const SizedBox(width: 8),
                                 Text(

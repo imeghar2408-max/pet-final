@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/api_service.dart';
 import '../../core/theme.dart';
 import '../home/home_screen.dart';
-import 'welcome_screen.dart';
+import 'phone_login_screen.dart';
 import 'owner_profile_setup_screen.dart';
 
 class AuthGate extends StatelessWidget {
@@ -20,7 +20,7 @@ class AuthGate extends StatelessWidget {
 
         final user = authSnapshot.data;
         if (user == null) {
-          return const WelcomeScreen();
+          return const PhoneLoginScreen();
         }
 
         // Authenticated in Firebase: verify backend profile registration

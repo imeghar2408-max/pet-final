@@ -70,11 +70,11 @@ class _ChatScreenState extends State<ChatScreen> {
       bookingId: widget.bookingId,
     );
 
-    _socket.socket.onConnect((_) {
+    _socket.socket.on('connect', (_) {
       if (mounted) setState(() => _isConnected = true);
     });
 
-    _socket.socket.onDisconnect((_) {
+    _socket.socket.on('disconnect', (_) {
       if (mounted) setState(() => _isConnected = false);
     });
 

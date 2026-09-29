@@ -50,9 +50,7 @@ class _ActiveJobsTabState extends State<ActiveJobsTab> {
       // Update local booking model to IN_PROGRESS for tracking
       final updatedBooking = Booking(
         id: b.id,
-        petOwnerId: b.petOwnerId,
         providerId: b.providerId,
-        petId: b.petId,
         serviceType: b.serviceType,
         status: BookingStatus.inProgress,
         scheduledAt: b.scheduledAt,
@@ -67,7 +65,6 @@ class _ActiveJobsTabState extends State<ActiveJobsTab> {
         petName: b.petName,
         otherPartyName: b.otherPartyName,
         paymentStatus: b.paymentStatus,
-        rating: b.rating,
       );
 
       if (mounted) {

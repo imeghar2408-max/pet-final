@@ -3,17 +3,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/app_messenger.dart';
 import 'core/theme.dart';
 import 'features/auth/auth_gate.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
-    debugPrint('Firebase init notice: $e');
+    debugPrint('Firebase init error: $e');
   }
   runApp(const PetCareUserApp());
 }
-
 class PetCareUserApp extends StatelessWidget {
   const PetCareUserApp({super.key});
 

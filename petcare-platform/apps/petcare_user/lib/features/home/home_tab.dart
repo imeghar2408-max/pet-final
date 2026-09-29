@@ -10,7 +10,6 @@ import '../../widgets/status_badge.dart';
 import '../booking/booking_detail_screen.dart';
 import '../discovery/provider_list_screen.dart';
 import '../pets/add_pet_screen.dart';
-import '../pets/my_pets_screen.dart';
 import '../pets/pet_detail_screen.dart';
 import '../support/support_screen.dart';
 
@@ -43,33 +42,60 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Future<void> _initLocation() async {
-    final pos = await LocationService().acquirePosition(
-      context: context,
-      showRationaleFirst: false,
-    );
-    if (mounted && pos != null) {
-      setState(() => _currentPosition = pos);
+    try {
+      final pos = await LocationService().acquirePosition(
+        context: context,
+        showRationaleFirst: false,
+      );
+      if (mounted && pos != null) {
+        setState(() => _currentPosition = pos);
+      }
+    } catch (e) {
+      debugPrint('Location acquisition note: $e');
     }
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
+
     try {
-      final userFuture = UserApiService().getMe();
-      final petsFuture = UserApiService().getPets();
-      final bookingsFuture = UserApiService().getMyBookings();
+      // 1. Independent calls with individual timeouts so one slow/failing call doesn't hang the app
+      final userFuture = UserApiService()
+          .getMe()
+          .timeout(const Duration(seconds: 6))
+          .catchError((e) {
+        debugPrint('HomeTab getMe failed: $e');
+        return <String, dynamic>{};
+      });
+
+      final petsFuture = UserApiService()
+          .getPets()
+          .timeout(const Duration(seconds: 6))
+          .catchError((e) {
+        debugPrint('HomeTab getPets failed: $e');
+        return <Pet>[];
+      });
+
+      final bookingsFuture = UserApiService()
+          .getMyBookings()
+          .timeout(const Duration(seconds: 6))
+          .catchError((e) {
+        debugPrint('HomeTab getMyBookings failed: $e');
+        return <Booking>[];
+      });
 
       final results = await Future.wait([userFuture, petsFuture, bookingsFuture]);
 
       final user = results[0] as Map<String, dynamic>?;
-      final pets = results[1] as List<Pet>;
-      final bookings = results[2] as List<Booking>;
+      final pets = (results[1] as List<dynamic>?)?.cast<Pet>() ?? <Pet>[];
+      final bookings = (results[2] as List<dynamic>?)?.cast<Booking>() ?? <Booking>[];
 
       // Find next active or upcoming booking
       Booking? next;
       final active = bookings
           .where((b) => b.status == BookingStatus.inProgress || b.status == BookingStatus.accepted)
           .toList();
+
       if (active.isNotEmpty) {
         next = active.first;
       } else {
@@ -79,14 +105,18 @@ class _HomeTabState extends State<HomeTab> {
 
       if (mounted) {
         setState(() {
-          _user = user;
+          _user = user != null && user.isNotEmpty ? user : null;
           _pets = pets;
           _nextBooking = next;
-          _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+    } catch (e, stack) {
+      debugPrint('HomeTab _loadData unexpected error: $e\n$stack');
+    } finally {
+      // Guaranteed to terminate the loading spinner regardless of success or failure
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -113,6 +143,7 @@ class _HomeTabState extends State<HomeTab> {
       color: PetColors.dark,
       onRefresh: _loadData,
       child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -438,7 +469,7 @@ class _HomeTabState extends State<HomeTab> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                           builder: (_) => PetDetailScreen(pet: pet),
+                            builder: (_) => PetDetailScreen(pet: pet),
                           ),
                         );
                       },

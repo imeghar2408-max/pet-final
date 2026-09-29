@@ -1,36 +1,85 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
-/// Central HTTP client both apps use to talk to the NestJS backend.
-/// Automatically attaches the current Firebase ID token to every request.
 class ApiClient {
   final Dio dio;
 
   ApiClient({required String baseUrl})
-      : dio = Dio(BaseOptions(baseUrl: baseUrl, connectTimeout: const Duration(seconds: 10))) {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          final token = await user.getIdToken();
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        handler.next(options);
-      },
-    ));
+      : dio = Dio(
+          BaseOptions(
+            baseUrl: baseUrl.endsWith('/') ? baseUrl : '$baseUrl/',
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+            sendTimeout: const Duration(seconds: 10),
+            headers: const {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+        ) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            String? token;
+            try {
+              // Read cached token first
+              token = await user.getIdToken(false).timeout(const Duration(seconds: 8));
+            } catch (_) {
+              try {
+                // Quick retry if cached token wasn't ready immediately after OTP
+                token = await user.getIdToken(true).timeout(const Duration(seconds: 5));
+              } catch (e) {
+                debugPrint('Failed to acquire Firebase ID token: $e');
+              }
+            }
+
+            if (token != null && token.isNotEmpty) {
+              options.headers['Authorization'] = 'Bearer $token';
+              return handler.next(options);
+            } else {
+              // Fail early rather than sending an invalid unauthenticated request
+              debugPrint('Abort: Token missing for protected path: ${options.path}');
+              return handler.reject(
+                DioException(
+                  requestOptions: options,
+                  error: 'Firebase session active but failed to retrieve token.',
+                  type: DioExceptionType.cancel,
+                ),
+              );
+            }
+          }
+          return handler.next(options);
+        },
+        onError: (DioException error, handler) {
+          debugPrint(
+            'API Error [${error.response?.statusCode ?? 'NO_RESPONSE'}] '
+            '=> Path: ${error.requestOptions.path}',
+          );
+          return handler.next(error);
+        },
+      ),
+    );
   }
 
-  Future<Response> get(String path, {Map<String, dynamic>? query}) =>
-      dio.get(path, queryParameters: query);
+  Future<Response<T>> get<T>(String path, {Map<String, dynamic>? query, Options? options}) =>
+      dio.get<T>(path, queryParameters: query, options: options);
 
-  Future<Response> post(String path, {Object? data}) => dio.post(path, data: data);
+  Future<Response<T>> post<T>(String path, {Object? data, Map<String, dynamic>? query, Options? options}) =>
+      dio.post<T>(path, data: data, queryParameters: query, options: options);
+
+  Future<Response<T>> put<T>(String path, {Object? data, Map<String, dynamic>? query, Options? options}) =>
+      dio.put<T>(path, data: data, queryParameters: query, options: options);
+
+  Future<Response<T>> delete<T>(String path, {Object? data, Map<String, dynamic>? query, Options? options}) =>
+      dio.delete<T>(path, data: data, queryParameters: query, options: options);
 }
 
-/// Point this at your deployed backend, or http://10.0.2.2:3000 for the
-/// Android emulator talking to a backend running on your dev machine.
 class ApiConfig {
   static const baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
+    defaultValue: 'http://localhost:3000/api',
   );
 }
